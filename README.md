@@ -1,5 +1,9 @@
 # Fargate Cloudformation template infrastructure
 
+![GitHub contributors](https://img.shields.io/github/contributors/SimplicitysStrength/fargate-rds-stack)
+![GitHub last commit (branch)](https://img.shields.io/github/last-commit/SimplicitysStrength/fargate-rds-stack/master)
+![GitHub search hit counter](https://img.shields.io/github/search/SimplicitysStrength/fargate-rds-stack/goto)
+
 ### Contents
 
 Complete infra as code stack using aws cloudformation

@@ -92,6 +92,7 @@ Once all the 5 parts of the cloudformation stack are running, some handy build s
 These will vary depending on the project's technology and need, Although they can be used as examples.
 
 * `/src/main/continuous_deployment/build_pythonbackend.sh` [here](https://github.com/SimplicitysStrength/fargate-rds-stack/blob/master/src/main/continuous_deployment/build_pythonbackend.sh)
+  
   Creates a docker container image with the backend part and publishes it, triggering a replacement on the ECS Cluster. It is accesible under  `/api` path, or directly through the loadbalancer dns.
 
 * `/src/main/continuous_deployment/build_reactapp.sh` [here](https://github.com/SimplicitysStrength/fargate-rds-stack/blob/master/src/main/continuous_deployment/build_reactapp.sh)

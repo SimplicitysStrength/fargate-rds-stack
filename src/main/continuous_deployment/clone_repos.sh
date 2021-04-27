@@ -16,5 +16,5 @@ popd
 
 # To use the repo after --depth=1
 # git fetch  --unshallow
-# Convert a shallow repository to a complete one, removing all the limitations imposed by shallow repositories.
+# Convert a shallow repository to a complete one, removing all the limitations of shallow repositories.
   

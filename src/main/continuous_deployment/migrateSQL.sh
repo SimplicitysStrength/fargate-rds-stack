@@ -12,12 +12,3 @@ docker build ./submodules/example-python-backend/ --tag python-backend  --build-
 containerId=$(docker images -q -f "reference=python-backend")
 
 docker run $containerId shell < echo 'Prod migration setup'
-                          \n ENVRNMNT=prod
-                          \n DBDNS=$database_DNS\
-                          \n python manage.py showmigrations \
-                          \n python manage.py makemigrations \
-                          \n python manage.py migrate \
-
-# docker run $containerId python manage.py showmigrations
-# docker run $containerId python manage.py makemigrations
-# docker run $containerId python manage.py migrate

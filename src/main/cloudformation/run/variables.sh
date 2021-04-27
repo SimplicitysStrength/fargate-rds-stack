@@ -4,7 +4,7 @@
 environment="staging"
 # environment="reporting"
 
-projectName="projet"
+projectName="projectXYZ"
 
 repoName=$projectName
 

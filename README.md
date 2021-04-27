@@ -89,7 +89,8 @@ In practice these will only be run when launching new environments or when doing
 Automating stack creations was not part of the needs for the initial project.
 
 Once all the 5 parts of the cloudformation stack are running, some handy build scripts can be found in the `/src/main/continuous_deployment` folder.
-These will vary depending on the project's technology and need, Although they can be used as examples.
+
+These will vary depending on the project's technology and needs. Hopefuly these can be used as startup points.
 
 * `/src/main/continuous_deployment/build_pythonbackend.sh` [here](https://github.com/SimplicitysStrength/fargate-rds-stack/blob/master/src/main/continuous_deployment/build_pythonbackend.sh)
   
@@ -102,8 +103,8 @@ These will vary depending on the project's technology and need, Although they ca
 
 ### Pricing
 
-This template is by no means the best or the cheapest way to create such architecture on AWS. Altough with the loadbalancer and an autoscalling group it allows for a small to medium project to start and grow organically.
-I would say the initial cost is buying the domain and certificate, after that running costs for the ecs cluster, vpc and database are around 10-20$ per month for one replica, At the time of writting.
+This template is by no means the best or the cheapest way to create such architecture on AWS. With a configurable loadbalancer, an autoscalling group, and many optins to choose from, it allows for a small to medium project to start and grow organically.
+I would say the initial cost is buying the domain and certificate, after that running costs for the ecs cluster, vpc and database are around 10-20$ per month for one replica (At the time of writting)
 
 [Pricing - AWSCertificate Manager](https://aws.amazon.com/en/certificate-manager/pricing/)
 [AWS - Free tier](https://aws.amazon.com/en/free/)

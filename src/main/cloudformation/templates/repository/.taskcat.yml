@@ -1,0 +1,9 @@
+project:
+  name: repository-template
+  regions:
+    - eu-west-1
+tests:
+  default:
+    template: ./repositoryTemplate.yml
+    parameters:
+      EnvironmentName: testing

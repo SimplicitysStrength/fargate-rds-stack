@@ -1,0 +1,23 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: This template deploys a Fargate cluster with one task definition, healthchecks and continuous uptime with ecr listeners
+Parameters:
+  EnvironmentName:
+    Description: An environment name that is prefixed to resource names
+    Type: String
+  ServiceName:
+    Type: String
+    # update with the name of the service
+    Default: pythonbackend
+## @ 1 Resources
+Resources:
+  ECRRepo:
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: {"Fn::Sub" : "${EnvironmentName}-${ServiceName}"}
+## @ 2 Outputs
+Outputs:
+  ContainerRepository:
+    Description: A reference to the created ECR Container repository
+    Value: !Ref ECRRepo
+    Export:
+      Name: !Sub "${EnvironmentName}-${ServiceName}-ECRRepo"

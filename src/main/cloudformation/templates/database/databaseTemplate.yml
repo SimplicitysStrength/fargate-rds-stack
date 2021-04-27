@@ -1,0 +1,102 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: Amazon RDS template - Default minimum values
+
+Parameters:
+
+  EnvironmentName:
+    Description: An environment name that is prefixed to resource names
+    Type: String
+
+  DBName:
+    Description: Master database can contain only alphanumeric characters
+    Type: String
+    Default: persist
+
+  DBUsername:
+    Description: Master database username
+    Type: String
+    Default: persist
+
+  DBPassword:
+    Description: Master database password
+    Type: String
+    NoEcho: true
+    Default: z9k6d&1a$d#sq2d3az%zsqZAd
+
+  DBClass:
+    Type: String
+    Default: db.t3.micro
+
+  DBAllocatedStorage:
+    Default: '5'
+    Description: The size of the database (GiB)
+    Type: Number
+    MinValue: '5'
+    MaxValue: '1024'
+
+  DBPort: 
+    Description: Database port
+    Type: Number
+    Default: 3306
+
+  VpcCIDR:
+    Description: Please enter the IP range (CIDR notation) for this VPC
+    AllowedPattern: '((\d{1,3})\.){3}\d{1,3}/\d{1,2}'
+    Type: String
+    Default: 0.0.0.0/0
+
+Resources:
+
+  DBInstance:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      DBName: 
+        Ref: DBName
+      Engine: MySQL
+      MasterUsername:
+        Ref: DBUsername
+      MasterUserPassword:
+        Ref: DBPassword
+      DBInstanceClass:
+        Ref: DBClass
+      Port: !Ref DBPort
+      AllocatedStorage:
+        Ref: DBAllocatedStorage
+      VPCSecurityGroups:
+        - !Ref DBSecurityGroup
+      DBSubnetGroupName: !Ref DBSubnetGroup
+
+      PubliclyAccessible: true
+
+  DBSubnetGroup:
+    Type: AWS::RDS::DBSubnetGroup
+    Properties: 
+      DBSubnetGroupDescription: RDS Subnet group
+      DBSubnetGroupName: !Sub "${EnvironmentName}-DBSubgr"
+      SubnetIds: 
+        Fn::Split: 
+          - ","
+          - Fn::ImportValue: 
+              Fn::Sub: "${EnvironmentName}-PublicSubnetList"
+      Tags:
+        - Key: Name
+          Value: !Sub ${EnvironmentName} Db subnet group
+
+  DBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      VpcId: {"Fn::ImportValue" : {"Fn::Sub" : "${EnvironmentName}-VPCID"}}
+      GroupDescription: Enable HTTP access
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: !Ref DBPort
+          ToPort: !Ref DBPort
+          CidrIp: !Ref VpcCIDR
+
+Outputs:
+
+  DatabaseAdress:
+    Description: DNS For the database
+    Value: !GetAtt DBInstance.Endpoint.Address
+    Export:
+      Name: !Join ['-', [!Ref EnvironmentName, 'DatabaseAdress']]

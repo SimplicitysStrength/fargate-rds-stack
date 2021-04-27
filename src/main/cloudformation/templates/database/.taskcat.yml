@@ -1,0 +1,9 @@
+project:
+  name: database-template
+  regions:
+    - eu-west-1
+tests:
+  default:
+    template: ./databaseTemplate.yml
+    parameters:
+      EnvironmentName: testDbName

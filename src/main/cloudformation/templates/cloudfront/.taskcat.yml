@@ -1,0 +1,9 @@
+project:
+  name: cloudfront-template
+  regions:
+    - eu-west-1
+tests:
+  default:
+    template: ./cloudFrontTemplate.yml
+    parameters:
+      EnvironmentName: testing

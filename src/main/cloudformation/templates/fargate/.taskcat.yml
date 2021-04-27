@@ -1,0 +1,9 @@
+project:
+  name: fargate-template
+  regions:
+    - eu-west-1
+tests:
+  default:
+    template: ./fargateTemplate.yml
+    parameters:
+      EnvironmentName: testing

@@ -1,0 +1,9 @@
+project:
+  name: vpc-template
+  regions:
+    - eu-west-1
+tests:
+  default:
+    template: ./vpcTemplate.yml
+    parameters:
+      EnvironmentName: testing

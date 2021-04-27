@@ -1,0 +1,167 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: CloudFront distribution with an S3 origin and url based redirects to ElasticLoadBalancer
+Parameters:
+  EnvironmentName:
+    Description: An environment name that is prefixed to resource names
+    Type: String
+  ServiceName:
+    Type: String
+    # update with the name of the service
+    Default: pythonbackend
+  HostedZoneName:
+    Type: String
+    Default: company.com
+  Subdomain:
+    Type: String
+    Default: myservice
+  Certificate:
+    Type: String
+    # Update with the certificate ARN from Certificate Manager, which must exist in the same region.
+    Default: 'arn:aws:acm:region:123456789012:certificate/00000000-0000-0000-0000-000000000000'
+Resources:
+  S3Bucket:
+    Metadata:
+      Comment: Bucket to store some data
+      'AWS::CloudFormation::Designer':
+        id: 1a4ac025-beeb-4f58-9db1-d4c04116f4a1
+    Properties:
+      AccessControl: PublicRead
+      BucketName: !Sub '${EnvironmentName}-${ServiceName}'
+    Type: 'AWS::S3::Bucket'
+  S3BucketPolicy:
+    Metadata:
+      Comment: Bucket policy to allow cloudfront to access the data
+      'AWS::CloudFormation::Designer':
+        id: 64ad68a7-a811-4a20-b90e-fa723b5068cf
+    Properties:
+      Bucket: !Ref S3Bucket
+      PolicyDocument:
+        Statement:
+          - Action:
+              - 's3:GetObject'
+            Effect: Allow
+            Principal:
+              CanonicalUser: !GetAtt CfOriginAccessIdentity.S3CanonicalUserId
+            Resource:
+              - !Sub 'arn:aws:s3:::${S3Bucket}/*'
+    Type: 'AWS::S3::BucketPolicy'
+  CfDistribution:
+    Metadata:
+      Comment: A simple CloudFront distribution with an S3 origin
+      'AWS::CloudFormation::Designer':
+        id: b6dad0b7-c5b2-4e90-a228-0a0fceecdfa4
+    Properties:
+      DistributionConfig:
+        Comment: A simple distribution with an S3 origin
+        Aliases: 
+          - !Join ['', [!Ref Subdomain, ., !Ref HostedZoneName]]
+        ViewerCertificate:
+          AcmCertificateArn: !Ref Certificate
+          SslSupportMethod: 'sni-only'
+        DefaultCacheBehavior:
+          AllowedMethods:
+            - HEAD
+            - GET
+          CachedMethods:
+            - HEAD
+            - GET
+          Compress: false
+          ForwardedValues:
+            Cookies:
+              Forward: none
+            QueryString: true
+          # DefaultTTL: 86400
+          # MaxTTL: 31536000
+          # MinTTL: 86400
+          DefaultTTL: 0
+          MaxTTL: 0
+          MinTTL: 0
+          TargetOriginId: !Sub 's3-origin-${S3Bucket}'
+          ViewerProtocolPolicy: redirect-to-https
+        CacheBehaviors:
+          - TargetOriginId: !Sub ${EnvironmentName}-LoadBalancer
+            ViewerProtocolPolicy: 'allow-all'
+            PathPattern: '/api/*'
+            AllowedMethods:
+              - HEAD
+              - DELETE
+              - POST
+              - GET
+              - OPTIONS
+              - PUT
+              - PATCH
+            ForwardedValues:
+              Cookies:
+                Forward: all
+              Headers:
+                - 'Host'
+                - 'Accept'
+                - 'Accept-Charset'
+                - 'Accept-Datetime'
+                - 'Accept-Encoding'
+                - 'Accept-Language'
+                - 'Authorization'
+                - 'Origin'
+              QueryString: true
+            DefaultTTL: 0
+            MaxTTL: 0
+            MinTTL: 0
+        DefaultRootObject: index.html
+        Enabled: true
+        HttpVersion: http1.1
+        IPV6Enabled: false
+        CustomErrorResponses:
+          - ErrorCode: 404
+            ResponseCode: 200
+            ResponsePagePath: "/"
+          # - ErrorCode: 403
+          #   ResponseCode: 200
+          #   ResponsePagePath: "/"
+        Origins:
+          - DomainName: !GetAtt S3Bucket.DomainName
+            Id: !Sub 's3-origin-${S3Bucket}'
+            OriginPath: ''
+            S3OriginConfig:
+              OriginAccessIdentity: !Sub 'origin-access-identity/cloudfront/${CfOriginAccessIdentity}'
+          - DomainName: 
+              Fn::ImportValue:
+                !Sub ${EnvironmentName}-${ServiceName}-LoadBalancerDomain
+            Id: !Sub ${EnvironmentName}-LoadBalancer
+            OriginPath: ''
+            CustomOriginConfig:
+              OriginProtocolPolicy: 'https-only'
+              OriginSSLProtocols:
+                - 'SSLv3'
+        PriceClass: PriceClass_100
+        
+    Type: 'AWS::CloudFront::Distribution'
+  CfOriginAccessIdentity:
+    Metadata:
+      Comment: Access S3 bucket content only through CloudFront
+      'AWS::CloudFormation::Designer':
+        id: 9e355378-88db-44a3-933e-c01b871eee14
+    Properties:
+      CloudFrontOriginAccessIdentityConfig:
+        Comment: !Sub ${EnvironmentName} Access S3 bucket
+    Type: 'AWS::CloudFront::CloudFrontOriginAccessIdentity'
+  DNSRecord:
+    Type: AWS::Route53::RecordSet
+    Properties:
+      HostedZoneName: !Join ['', [!Ref HostedZoneName, .]]
+      Name: !Join ['', [!Ref Subdomain, ., !Ref HostedZoneName, .]]
+      Type: A
+      AliasTarget:
+        DNSName: !GetAtt CfDistribution.DomainName
+        HostedZoneId: 'Z2FDTNDATAQYW2'
+Outputs:
+  S3BucketName:
+    Description: Bucket name
+    Value: !Ref S3Bucket
+    Export:
+      Name: !Join ['-', [!Ref EnvironmentName, !Ref ServiceName, 'BucketName']] 
+  CfDistributionId:
+    Description: Id for our cloudfront distribution
+    Value: !Ref CfDistribution
+  CfDistributionDomainName:
+    Description: Domain name for our cloudfront distribution
+    Value: !GetAtt CfDistribution.DomainName
